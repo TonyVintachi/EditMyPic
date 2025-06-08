@@ -3,6 +3,7 @@
     package="com.example.imageeditor">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- Required by Pixoeditor if it uses network features -->
 
     <application
         android:allowBackup="true"
@@ -18,6 +19,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+        <activity
+            android:name="com.pixoeditor.sdk.PixoeditorActivity" // Replace with actual Pixoeditor Activity
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" // Or Pixoeditor's theme
+            />
+        -->
     </application>
 
 </manifest>

@@ -1,0 +1,51 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.example.imageeditor'
+    compileSdk 33 // Or your target SDK
+
+    defaultConfig {
+        applicationId "com.example.imageeditor"
+        minSdk 21 // Or your minimum SDK
+        targetSdk 33 // Or your target SDK
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    // It's good practice to define viewBinding or other features if used
+    // viewBinding {
+    //     enabled = true
+    // }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.9.0' // Example, use current versions
+    implementation 'androidx.appcompat:appcompat:1.6.1' // Example, use current versions
+    implementation 'com.google.android.material:material:1.10.0' // Example, use current versions
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4' // Example, use current versions
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+
+    // Add Pixoeditor SDK dependency here
+    // implementation 'com.pixoeditor:sdk:1.0.0' // Replace with actual Pixoeditor SDK dependency
+    // After adding the actual dependency, remember to sync your project with Gradle files.
+}
