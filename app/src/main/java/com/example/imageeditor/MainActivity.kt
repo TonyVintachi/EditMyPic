@@ -159,7 +159,7 @@ class MainActivity : AppCompatActivity() {
                     Snackbar.make(findViewById(android.R.id.content), "Error: Could not prepare image for editor.", Snackbar.LENGTH_LONG).show()
                     progressBar.visibility = View.GONE
                     applyFilterButton.isEnabled = true
-                    // cancelEditingButton.visibility = View.GONE;
+                    // cancelEditingButton.visibility = View.GONE; still adjusting view
                     webView.visibility = View.GONE
                     imageCardView.visibility = View.VISIBLE
                     applyFilterButton.visibility = View.VISIBLE
