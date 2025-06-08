@@ -52,6 +52,23 @@
                     buttonsbgcolor: '#007AFF',       // New
                     buttonstextcolor: '#FFFFFF',     // New
                     language: 'fr-FR', // New: Set language to French
+                    output: {
+                        format: 'jpeg', // Change output format to JPEG
+                        quality: 0.8    // Set JPEG quality to 80%
+                    },
+                    unit: 'cm', // New: Set unit to centimeters
+                    propertypanel: { // New: Configure property panel
+                        collapsible: true,
+                        collapsed: false
+                    },
+                    onCancel: function() {
+                        console.log("JavaScript: Pixoeditor onCancel triggered.");
+                        if (window.Android && typeof window.Android.editorCancelled === 'function') {
+                            window.Android.editorCancelled();
+                        } else {
+                            console.error("JavaScript: Android interface or editorCancelled method missing for onCancel.");
+                        }
+                    },
                     onSave: function(imageResult) {
                         console.log("JavaScript: Pixoeditor onSave triggered.");
                         if (window.Android && typeof window.Android.processEditedImage === 'function') {
@@ -99,6 +116,18 @@
             }
         };
 
+        function triggerPixoCancel() {
+            if (pixoInstance) {
+                console.log("JavaScript: triggerPixoCancel called. Executing pixoInstance.cancelEditing().");
+                pixoInstance.cancelEditing(); // Call Pixoeditor's instance method
+            } else {
+                console.error("JavaScript: pixoInstance not available to cancel editing.");
+                // Optionally call back to Android if this happens
+                // if (window.Android && typeof window.Android.logError === 'function') {
+                //     window.Android.logError("JS: Pixo instance not found for cancel.");
+                // }
+            }
+        }
     </script>
 </body>
 </html>
