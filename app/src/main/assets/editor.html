@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pixoeditor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+        #editor_container { width: 100%; height: 100%; }
+    </style>
+    <script src="https://pixoeditor.com/editor/scripts/bridge.m.js"></script>
+</head>
+<body>
+    <!-- Using a container div if we choose 'child' type, otherwise Pixo might manage its own modal/window -->
+    <div id="editor_container"></div>
+
+    <script>
+        let pixoInstance = null;
+
+        // Function to be called by Android to load an image
+        function loadImageForEditing(base64ImageData) {
+            if (!pixoInstance) {
+                console.error("Pixoeditor instance not initialized yet.");
+                // Optionally, try to initialize now if not done, or send error back to Android
+                // Android.logError("Pixoeditor not ready.");
+                return;
+            }
+            if (!base64ImageData) {
+                console.error("No image data provided.");
+                // Android.logError("No image data received by JS.");
+                return;
+            }
+            console.log("JavaScript: Received image data. Attempting to load in Pixoeditor.");
+            pixoInstance.edit(base64ImageData);
+        }
+
+        // Function to be called by Android to initialize the editor (e.g. after WebView is ready)
+        // Alternatively, initialize on body load, but ensure Android interface is ready if needed immediately.
+        function initializeEditor() {
+            if (pixoInstance) {
+                console.log("Pixoeditor already initialized.");
+                return;
+            }
+            console.log("JavaScript: Initializing Pixoeditor...");
+            try {
+                pixoInstance = new Pixo.Bridge({
+                    apikey: '29q52bi3p728',
+                    type: 'modal', // Using modal as a default, can be 'child' if parent is set
+                    // parent: document.getElementById('editor_container'), // Needed if type: 'child'
+                    onSave: function(imageResult) {
+                        console.log("JavaScript: Pixoeditor onSave triggered.");
+                        if (window.Android && typeof window.Android.processEditedImage === 'function') {
+                            const dataUrl = imageResult.toDataURL(); // Get image as DataURL
+                            window.Android.processEditedImage(dataUrl);
+                        } else {
+                            console.error("JavaScript: Android interface not available or processEditedImage method missing.");
+                        }
+                        // pixoInstance.cancelEditing(); // Close editor after save
+                    },
+                    onClose: function() {
+                        console.log("JavaScript: Pixoeditor onClose triggered.");
+                        if (window.Android && typeof window.Android.editorClosed === 'function') {
+                            window.Android.editorClosed();
+                        }
+                    },
+                    onError: function(error) {
+                        console.error("JavaScript: Pixoeditor Error: ", error);
+                        if (window.Android && typeof window.Android.logError === 'function') {
+                            window.Android.logError("Pixo Error: " + JSON.stringify(error));
+                        }
+                    }
+                    // Add other configurations as needed from the documentation
+                });
+                console.log("JavaScript: Pixoeditor initialized successfully.");
+            } catch (e) {
+                console.error("JavaScript: Failed to initialize Pixoeditor", e);
+                 if (window.Android && typeof window.Android.logError === 'function') {
+                    window.Android.logError("JS Pixo Init Failed: " + e.toString());
+                }
+            }
+        }
+
+        // Initialize the editor when the page loads.
+        // Consider if Android needs to trigger this after its interface is ready.
+        window.onload = function() {
+            if (window.Android && typeof window.Android.notifyEditorReady === 'function') {
+                window.Android.notifyEditorReady();
+            } else {
+                // Fallback or error if Android interface is not detected immediately
+                console.error("Android interface not detected at window.onload. Cannot notify readiness.");
+                // You might still try to initialize Pixo directly here as a fallback,
+                // but it's better if Android controls the initialization timing.
+                // initializeEditor();
+            }
+        };
+
+    </script>
+</body>
+</html>

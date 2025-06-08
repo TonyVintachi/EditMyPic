@@ -19,13 +19,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!--
-        <activity
-            android:name="com.pixoeditor.sdk.PixoeditorActivity" // Replace with actual Pixoeditor Activity
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" // Or Pixoeditor's theme
-            />
-        -->
     </application>
 
 </manifest>
