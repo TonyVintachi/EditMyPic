@@ -45,9 +45,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var imageView: ImageView
     private lateinit var applyFilterButton: Button
     private lateinit var webView: WebView
-    private lateinit var mainContentLayout: ConstraintLayout
+    // private lateinit var mainContentLayout: ConstraintLayout // Removed
     private lateinit var progressBar: ProgressBar
-    private lateinit var dimOverlay: View
+    // private lateinit var dimOverlay: View // Removed
+    private lateinit var imageCardView: com.google.android.material.card.MaterialCardView // Added
+
     private var currentImageUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,12 +57,18 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         imageView = findViewById(R.id.imageView)
+        imageCardView = findViewById(R.id.imageCardView) // Added
         val selectImageButton: Button = findViewById(R.id.selectImageButton)
         applyFilterButton = findViewById(R.id.applyFilterButton)
-        mainContentLayout = findViewById(R.id.mainContentLayout)
+        // mainContentLayout = findViewById(R.id.mainContentLayout) // Removed
         webView = findViewById(R.id.webView)
         progressBar = findViewById(R.id.progressBar)
-        dimOverlay = findViewById(R.id.dimOverlay)
+        // dimOverlay = findViewById(R.id.dimOverlay) // Removed
+
+        // Initial UI State
+        imageCardView.visibility = View.GONE
+        applyFilterButton.visibility = View.GONE
+        webView.visibility = View.GONE
 
         // Configure WebView settings
         webView.settings.javaScriptEnabled = true
@@ -106,43 +114,51 @@ class MainActivity : AppCompatActivity() {
                     // Log.d(TAG, "Converted image to Base64 Data URL (length: ${dataUrl.length})")
                     Log.d(TAG, "Converted image to Base64 string (length: ${base64String.length})")
 
-
-                    dimOverlay.visibility = View.VISIBLE
-                    mainContentLayout.visibility = View.GONE
                     webView.visibility = View.VISIBLE
-                    // It's safer to pass just the Base64 string and let JS construct the data URL.
-                    // Or ensure dataUrl is properly escaped if it's complex.
-                    // For simplicity and safety with evaluateJavascript's string quoting:
                     webView.evaluateJavascript("javascript:loadImageForEditing('$base64String');", null)
-                    // If passing full dataUrl:
-                    // webView.evaluateJavascript("javascript:loadImageForEditing('$dataUrl');", null)
+
+                    imageCardView.visibility = View.GONE // Hide preview
+                    applyFilterButton.visibility = View.GONE // Hide button
+
                     // ProgressBar will be hidden in WebAppInterface.notifyEditorReady
+                    // applyFilterButton.isEnabled = false; // Already set at start of click listener
 
                 } catch (e: FileNotFoundException) {
                     Log.e(TAG, "File not found for image URI: $currentImageUri", e)
                     Snackbar.make(findViewById(android.R.id.content), "Error: Image file not found.", Snackbar.LENGTH_LONG).show()
                     progressBar.visibility = View.GONE
                     applyFilterButton.isEnabled = true
+                    webView.visibility = View.GONE // Ensure webview hidden on error
+                    imageCardView.visibility = View.VISIBLE // Keep preview visible
+                    applyFilterButton.visibility = View.VISIBLE // Keep button visible
                 } catch (e: IOException) {
                     Log.e(TAG, "IOException during image processing: $currentImageUri", e)
                     Snackbar.make(findViewById(android.R.id.content), "Error: Could not read image file.", Snackbar.LENGTH_LONG).show()
                     progressBar.visibility = View.GONE
                     applyFilterButton.isEnabled = true
+                    webView.visibility = View.GONE
+                    imageCardView.visibility = View.VISIBLE
+                    applyFilterButton.visibility = View.VISIBLE
                 } catch (e: OutOfMemoryError) {
                     Log.e(TAG, "OutOfMemoryError during image processing: $currentImageUri", e)
                     Snackbar.make(findViewById(android.R.id.content), "Error: Image too large to process.", Snackbar.LENGTH_LONG).show()
                     progressBar.visibility = View.GONE
                     applyFilterButton.isEnabled = true
+                    webView.visibility = View.GONE
+                    imageCardView.visibility = View.VISIBLE
+                    applyFilterButton.visibility = View.VISIBLE
                 } catch (e: Exception) {
                     Log.e(TAG, "Unexpected error during image processing: $currentImageUri", e)
                     Snackbar.make(findViewById(android.R.id.content), "Error: Could not prepare image for editor.", Snackbar.LENGTH_LONG).show()
                     progressBar.visibility = View.GONE
                     applyFilterButton.isEnabled = true
+                    webView.visibility = View.GONE
+                    imageCardView.visibility = View.VISIBLE
+                    applyFilterButton.visibility = View.VISIBLE
                 }
             } else {
-                Log.w(TAG, "No image selected, cannot launch Pixoeditor.")
-                // progressBar.visibility = View.GONE; // Should not be visible if currentImageUri is null
-                applyFilterButton.isEnabled = true; // Ensure it's re-enabled if it was somehow disabled
+                Log.w(TAG, "No image selected.") // Message changed from "cannot launch Pixoeditor"
+                applyFilterButton.isEnabled = true;
                 Snackbar.make(findViewById(android.R.id.content), "Please select an image first.", Snackbar.LENGTH_SHORT).show()
             }
         }
@@ -172,28 +188,40 @@ class MainActivity : AppCompatActivity() {
                         currentImageUri = selectedImageUri
                         Log.d(TAG, "Selected image URI: $currentImageUri")
                         try {
+                            imageCardView.visibility = View.VISIBLE
                             imageView.setImageURI(currentImageUri)
-                            applyFilterButton.isEnabled = true // Enable button
+                            applyFilterButton.text = "Load Image into Editor"
+                            applyFilterButton.visibility = View.VISIBLE
+                            applyFilterButton.isEnabled = true
+                            webView.visibility = View.GONE
                         } catch (e: Exception) {
                             Log.e(TAG, "Error setting image URI: ${e.message}", e)
                             Snackbar.make(findViewById(android.R.id.content), "Error loading image.", Snackbar.LENGTH_SHORT).show()
                             currentImageUri = null
-                            applyFilterButton.isEnabled = false // Disable button
-                            progressBar.visibility = View.GONE // Ensure progress bar is hidden
+                            imageCardView.visibility = View.GONE
+                            applyFilterButton.visibility = View.GONE
+                            applyFilterButton.isEnabled = false
+                            webView.visibility = View.GONE
+                            progressBar.visibility = View.GONE
                         }
                     } else {
                         Log.w(TAG, "Selected image URI is null")
                         Snackbar.make(findViewById(android.R.id.content), "No image selected.", Snackbar.LENGTH_SHORT).show()
                         currentImageUri = null
-                        applyFilterButton.isEnabled = false // Disable button
-                        progressBar.visibility = View.GONE // Ensure progress bar is hidden
+                        imageCardView.visibility = View.GONE
+                        applyFilterButton.visibility = View.GONE
+                        applyFilterButton.isEnabled = false
+                        webView.visibility = View.GONE
+                        progressBar.visibility = View.GONE
                     }
                 } else { // Image selection cancelled or failed
                     Log.w(TAG, "Image selection cancelled or failed. ResultCode: $resultCode")
-                    // Snackbar.make(findViewById(android.R.id.content), "Image selection cancelled.", Snackbar.LENGTH_SHORT).show() // Optional
-                    currentImageUri = null // Ensure currentImageUri is null
-                    applyFilterButton.isEnabled = false // Disable button if no image is selected
-                    progressBar.visibility = View.GONE // Ensure progress bar is hidden
+                    currentImageUri = null
+                    imageCardView.visibility = View.GONE
+                    applyFilterButton.visibility = View.GONE
+                    applyFilterButton.isEnabled = false
+                    webView.visibility = View.GONE
+                    progressBar.visibility = View.GONE
                 }
             }
             PIXOEDITOR_REQUEST_CODE -> { // This is for the native SDK placeholder, not WebView
@@ -243,16 +271,21 @@ class MainActivity : AppCompatActivity() {
                                                 // Or save bitmap to a file and get a new URI for currentImageUri
 
                             runOnUiThread {
+                                imageCardView.visibility = View.VISIBLE
                                 imageView.setImageBitmap(decodedBitmap)
-                                // Attempt to save the bitmap
-                                saveBitmapToGallery(decodedBitmap) // Call save function
+                                saveBitmapToGallery(decodedBitmap)
                                 Snackbar.make(findViewById(android.R.id.content), "Image updated successfully.", Snackbar.LENGTH_LONG).show()
                                 webView.visibility = View.GONE
-                                mainContentLayout.visibility = View.VISIBLE
-                                applyFilterButton.isEnabled = true // Image is available for filtering again
+                                applyFilterButton.text = "Load Image into Editor"
+                                applyFilterButton.visibility = View.VISIBLE
+                                applyFilterButton.isEnabled = true
                             }
                         } else {
                             Log.e(TAG, "WebAppInterface: Failed to decode bitmap from Base64.")
+                            // Keep editor visible for user to retry or close
+                            runOnUiThread { webView.visibility = View.VISIBLE }
+                            runOnUiThread { imageCardView.visibility = View.GONE }
+                            runOnUiThread { applyFilterButton.visibility = View.GONE }
                             runOnUiThread { Snackbar.make(findViewById(android.R.id.content), "Error: Failed to process image.", Snackbar.LENGTH_LONG).show() }
                         }
                     } else {
@@ -271,13 +304,11 @@ class MainActivity : AppCompatActivity() {
                 runOnUiThread { Snackbar.make(findViewById(android.R.id.content), "Error: Could not display edited image.", Snackbar.LENGTH_LONG).show() }
             } finally {
                 // Ensure UI consistency even if errors occur
-                if (webView.visibility == View.VISIBLE || progressBar.visibility == View.VISIBLE) {
-                     runOnUiThread {
-                        dimOverlay.visibility = View.GONE
-                        webView.visibility = View.GONE
-                        mainContentLayout.visibility = View.VISIBLE
-                        progressBar.visibility = View.GONE
-                    }
+                // Ensure UI consistency even if errors occur (e.g. an error in JS bridge itself)
+                // For processEditedImage errors, we generally want to keep the editor visible
+                // unless successfully processed.
+                if (progressBar.visibility == View.VISIBLE) {
+                     runOnUiThread { progressBar.visibility = View.GONE }
                 }
             }
         }
@@ -286,11 +317,13 @@ class MainActivity : AppCompatActivity() {
         fun editorClosed() {
             Log.d(TAG, "WebAppInterface: editorClosed called")
             runOnUiThread {
-                Snackbar.make(findViewById(android.R.id.content), "Editor closed.", Snackbar.LENGTH_SHORT).show()
-                dimOverlay.visibility = View.GONE
+                Snackbar.make(findViewById(android.R.id.content), "Editor session ended.", Snackbar.LENGTH_SHORT).show()
                 webView.visibility = View.GONE
-                mainContentLayout.visibility = View.VISIBLE
-                progressBar.visibility = View.GONE // Ensure progress bar is hidden
+                imageCardView.visibility = View.VISIBLE // Show last state of image
+                applyFilterButton.text = "Load Image into Editor"
+                applyFilterButton.visibility = View.VISIBLE
+                applyFilterButton.isEnabled = true
+                progressBar.visibility = View.GONE
             }
         }
 

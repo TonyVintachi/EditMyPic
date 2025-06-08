@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
-        #editor_container { width: 100%; height: 100%; }
+        #pixo-editor-host { width: 100%; height: 100%; } /* Ensure this is styled */
     </style>
     <script src="https://pixoeditor.com/editor/scripts/bridge.m.js"></script>
 </head>
 <body>
-    <!-- Using a container div if we choose 'child' type, otherwise Pixo might manage its own modal/window -->
-    <div id="editor_container"></div>
+    <div id="pixo-editor-host" style="width: 100%; height: 100%;"></div>
 
     <script>
         let pixoInstance = null;
@@ -44,8 +43,8 @@
             try {
                 pixoInstance = new Pixo.Bridge({
                     apikey: '29q52bi3p728',
-                    type: 'modal', // Using modal as a default, can be 'child' if parent is set
-                    // parent: document.getElementById('editor_container'), // Needed if type: 'child'
+                    type: 'child', // Changed to child
+                    parent: document.getElementById('pixo-editor-host'), // Added parent
                     onSave: function(imageResult) {
                         console.log("JavaScript: Pixoeditor onSave triggered.");
                         if (window.Android && typeof window.Android.processEditedImage === 'function') {
@@ -56,10 +55,10 @@
                         }
                         // pixoInstance.cancelEditing(); // Close editor after save
                     },
-                    onClose: function() {
-                        console.log("JavaScript: Pixoeditor onClose triggered.");
+                    onClose: function() { // May or may not be triggered by Pixo in child mode
+                        console.log("JavaScript: Pixoeditor onClose triggered (child mode).");
                         if (window.Android && typeof window.Android.editorClosed === 'function') {
-                            window.Android.editorClosed();
+                            window.Android.editorClosed(); // Android side needs to decide what this means now
                         }
                     },
                     onError: function(error) {
@@ -70,7 +69,7 @@
                     }
                     // Add other configurations as needed from the documentation
                 });
-                console.log("JavaScript: Pixoeditor initialized successfully.");
+                console.log("JavaScript: Pixoeditor initialized successfully in 'child' mode.");
             } catch (e) {
                 console.error("JavaScript: Failed to initialize Pixoeditor", e);
                  if (window.Android && typeof window.Android.logError === 'function') {
