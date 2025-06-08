@@ -45,6 +45,13 @@
                     apikey: '29q52bi3p728',
                     type: 'child', // Changed to child
                     parent: document.getElementById('pixo-editor-host'), // Added parent
+                    theme: 'Dark',      // New: Apply the Dark theme
+                    logosrc: 'none',    // New: Hide the default logo / don't show one
+                    canvasbgcolor: '#202020',        // New
+                    textcolor: '#E0E0E0',            // New
+                    buttonsbgcolor: '#007AFF',       // New
+                    buttonstextcolor: '#FFFFFF',     // New
+                    language: 'fr-FR', // New: Set language to French
                     onSave: function(imageResult) {
                         console.log("JavaScript: Pixoeditor onSave triggered.");
                         if (window.Android && typeof window.Android.processEditedImage === 'function') {
