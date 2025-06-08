@@ -292,17 +292,17 @@ class MainActivity : AppCompatActivity() {
             runOnUiThread { progressBar.visibility = View.VISIBLE }
             Log.d(TAG, "WebAppInterface: processEditedImage called with dataUrl (length: ${dataUrl.length})")
             try {
-                var mimeType = "image/png" // Default
-                if (dataUrl.startsWith("data:")) {
-                    val MimeParts = dataUrl.substringBefore(";base64,").split(":")
-                    if (MimeParts.size == 2 && MimeParts[0] == "data") {
-                        mimeType = MimeParts[1]
-                    }
+                val mimeType = DataUrlUtils.parseMimeType(dataUrl)
+                if (mimeType != null) {
+                    Log.d(TAG, "Received image with MIME type: $mimeType from Pixoeditor")
+                } else {
+                    Log.w(TAG, "Could not parse MIME type from Data URL.")
+                    // Consider this an error if a MIME type is strictly expected
+                    // For now, we'll proceed, but saving might be affected if MIME type is crucial later
                 }
-                Log.d(TAG, "Received image with MIME type: $mimeType from Pixoeditor")
 
-                if (dataUrl.startsWith("data:image")) { // Check it's an image
-                    val base64String = dataUrl.substringAfter("base64,") // More robust parsing
+                if (dataUrl.startsWith("data:image")) { // Check it's an image (even if mimeType parsing failed, could be malformed but still an image)
+                    val base64String = dataUrl.substringAfter("base64,")
                     if (base64String.isNotEmpty()) {
                         val imageBytes = Base64.decode(base64String, Base64.DEFAULT)
                         val decodedBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
