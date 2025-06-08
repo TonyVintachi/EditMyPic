@@ -47,6 +47,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var webView: WebView
     private lateinit var mainContentLayout: ConstraintLayout
     private lateinit var progressBar: ProgressBar
+    private lateinit var dimOverlay: View
     private var currentImageUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -59,6 +60,7 @@ class MainActivity : AppCompatActivity() {
         mainContentLayout = findViewById(R.id.mainContentLayout)
         webView = findViewById(R.id.webView)
         progressBar = findViewById(R.id.progressBar)
+        dimOverlay = findViewById(R.id.dimOverlay)
 
         // Configure WebView settings
         webView.settings.javaScriptEnabled = true
@@ -105,6 +107,7 @@ class MainActivity : AppCompatActivity() {
                     Log.d(TAG, "Converted image to Base64 string (length: ${base64String.length})")
 
 
+                    dimOverlay.visibility = View.VISIBLE
                     mainContentLayout.visibility = View.GONE
                     webView.visibility = View.VISIBLE
                     // It's safer to pass just the Base64 string and let JS construct the data URL.
@@ -270,6 +273,7 @@ class MainActivity : AppCompatActivity() {
                 // Ensure UI consistency even if errors occur
                 if (webView.visibility == View.VISIBLE || progressBar.visibility == View.VISIBLE) {
                      runOnUiThread {
+                        dimOverlay.visibility = View.GONE
                         webView.visibility = View.GONE
                         mainContentLayout.visibility = View.VISIBLE
                         progressBar.visibility = View.GONE
@@ -283,6 +287,7 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "WebAppInterface: editorClosed called")
             runOnUiThread {
                 Snackbar.make(findViewById(android.R.id.content), "Editor closed.", Snackbar.LENGTH_SHORT).show()
+                dimOverlay.visibility = View.GONE
                 webView.visibility = View.GONE
                 mainContentLayout.visibility = View.VISIBLE
                 progressBar.visibility = View.GONE // Ensure progress bar is hidden
